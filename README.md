@@ -1,27 +1,32 @@
 lua-snapshot
 ============
 
-Make a snapshot for lua state to detect memory leaks.
+Generates a diff between two snapshots of the lua state to detect memory leaks.
 
-See dump.lua for example.
 
 Build
 =====
 
-make linux
+luarocks make rockspecs/lua-snapshot-lkwd-1.rockspec
 
-or
+Usage
+=====
 
-make mingw (in windows)
-
-or
-
-make macosx
-
-Format
-======
 ```
-if you use snapshot_utils.diff(S1,S2,pretty) with argument pretty=true,the format is below:
+local snapshotter = require( "snapshotter" )
+snapshotter:snap()
+snapshotter:snap()
+snapshotter:diff( "path/to/dir" )
+snapshotter:snap()
+snapshotter:diff( "path/to/dir" )
+snapshotter:clear()
+```
+
+Diff will output a file to the given path else . if no path provided.
+
+The file will contain diffs of snap_n to snap_n+1 with the following format:
+
+```
 address+id [address]
        +type [table/function/userdata/thread]
        +tablecount [table's count]

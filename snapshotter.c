@@ -580,8 +580,13 @@ snapshot(lua_State *L) {
 }
 
 int
-luaopen_snapshot(lua_State *L) {
+luaopen_libsnapshotter(lua_State *L) {
 	luaL_checkversion(L);
 	lua_pushcfunction(L, snapshot);
 	return 1;
+}
+
+int
+luaopen_snapshotter_libsnapshotter(lua_State *L) {
+	return luaopen_libsnapshotter(L);
 }
