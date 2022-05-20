@@ -101,7 +101,7 @@ end
 
 function M.pretty_object_reflist(object,S)
     for i,ref in ipairs(object.reflist) do
-        if ref.obj == "(nil)" then      -- root
+        if ref.obj == "(nil)" or not S[ref.obj] then      -- root
             object.reflist[i] = M.refname(ref)
         else
             local refobj = S[ref.obj]
