@@ -2,15 +2,20 @@ local snapshot = require( "snapshotter.libsnapshotter" )
 local utils = require( "snapshotter.utils" )
 
 local M = {
-    snaps = {}
+    start_snap = nil
 }
 
-function M:snap()
+local function time()
     local date = os.date("*t")
-    local time = string.format( "%d-%d-%d %d:%d:%d", date.year, 
+    return string.format( "%d-%d-%d %d:%d:%d", date.year, 
         date.month, date.day, date.hour, date.min, date.sec )
+end
 
-    self.snaps[ #self.snaps + 1 ] = { snap = snapshot(), time = time }
+function M:start()
+    collectgarbage()
+    jit.off()
+    jit.flush()
+    self.start_snap = { snap = snapshot(), time = time() }
 end
 
 local function deep_copy( orig )
@@ -23,30 +28,28 @@ local function deep_copy( orig )
     return copy
 end
 
-function M:diff( dir )
+function M:stop( dir )
 
-    if #self.snaps < 2 then
-        error( "need at least two snaps for a diff" )
-    end
+    local top_n = 30
+    local from = self.start_snap 
+    local to = { snap = snapshot(), time = time() }
 
-    local output = ""
-    for i = 2, #self.snaps do
-        local from = self.snaps[ i - 1 ]
-        local to = self.snaps[ i ]
-        output = output .. from.time .. " - " .. to.time .. 
-            "\n==========================================\n\n" ..
-            utils.dump( utils.diff( deep_copy( from.snap ), 
-                deep_copy( to.snap ), true ) ) .. "\n\n"
-    end
+    local top_tables = utils.tablecount_topN( top_n, deep_copy( to.snap ), true )
+    local top_refcount = utils.refcount_topN( top_n, deep_copy( to.snap ), true )
+
+    local output = from.time .. " - " .. to.time ..
+        "\n=====================\nBiggest Tables \n=======================\n\n" .. utils.dump( top_tables ) .. 
+        "\n=====================\nBiggest RefCount\n======================\n " .. utils.dump( top_refcount ) ..
+        "\n=====================\nDiff\n======================\n " .. utils.dump( utils.diff( from.snap, to.snap, true ) ) 
     
     local file = io.open( ( dir or "." ) .. "/snapshot_" .. 
         os.time( os.date( "!*t" ) ) .. ".txt", "w" )
     file:write( output )
     file:close()
-end
 
-function M:clear()
-    self.snaps = {}
+    jit.on()
+    self.start_snap = nil
+    collectgarbage()
 end
 
 return M

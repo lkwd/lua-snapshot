@@ -14,17 +14,19 @@ Usage
 
 ```
 local snapshotter = require( "snapshotter" )
-snapshotter:snap()
-snapshotter:snap()
-snapshotter:diff( "path/to/dir" )
-snapshotter:snap()
-snapshotter:diff( "path/to/dir" )
-snapshotter:clear()
+snapshotter:start()
+snapshotter:stop( "path/to/dir" )
 ```
 
-Diff will output a file to the given path else . if no path provided.
+Stop will output a file to the given path else . if no path provided.
 
-The file will contain diffs of snap_n to snap_n+1 with the following format:
+The file will contain:
+
+Biggest Tables -> the tables with the most entries at the time of stopping.
+Biggest Refcount -> the memory with the highest refcount at the time of stopping.
+Diff -> the diff between a snapshots taken at start and at end
+
+Example format:
 
 ```
 address+id [address]
