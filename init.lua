@@ -28,7 +28,7 @@ local function deep_copy( orig )
     return copy
 end
 
-function M:stop( dir )
+function M:stop( dir, filename )
 
     local top_n = 30
     local from = self.start_snap 
@@ -42,8 +42,8 @@ function M:stop( dir )
         "\n=====================\nBiggest RefCount\n======================\n " .. utils.dump( top_refcount ) ..
         "\n=====================\nDiff\n======================\n " .. utils.dump( utils.diff( from.snap, to.snap, true ) ) 
     
-    local file = io.open( ( dir or "." ) .. "/snapshot_" .. 
-        os.time( os.date( "!*t" ) ) .. ".txt", "w" )
+    local file = io.open( ( dir or "." ) .. 
+        ( filename or "/snapshot_" .. os.time( os.date( "!*t" ) ) .. ".txt" ), "w" )
     file:write( output )
     file:close()
 
